@@ -5,7 +5,7 @@ import { Disclosure, Switch } from "../components";
 import { ScheduleModal } from "../components/schedule";
 import { db } from "../config/firebase";
 
-interface ITimer {
+export interface ITimer {
   id: string;
   days: number[];
   time: { hour: number; minutes: number };
@@ -76,13 +76,6 @@ export const SchedulePage = () => {
   };
   return (
     <div className="max-w-xl mx-auto flex flex-col items-center p-6">
-      <button
-        className="bg-sky-400 p-3 text-white rounded-full shadow-sm shadow-slate-500 hover:bg-sky-500 focus:bg-sky-300"
-        onClick={() => setTimePickerOpen((tp) => !tp)}
-      >
-        <FaPlus />
-      </button>
-
       <div className="py-5 w-full">
         {times.map((t, i) => (
           <div key={t.id}>
@@ -121,6 +114,12 @@ export const SchedulePage = () => {
           </div>
         ))}
       </div>
+      <button
+        className="bg-sky-400 p-3 text-white rounded-full shadow-sm shadow-slate-500 hover:bg-sky-500 focus:bg-sky-300"
+        onClick={() => setTimePickerOpen((tp) => !tp)}
+      >
+        <FaPlus />
+      </button>
       <ScheduleModal
         open={timePickerOpen}
         setOpen={setTimePickerOpen}

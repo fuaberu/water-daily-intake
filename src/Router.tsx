@@ -11,9 +11,7 @@ import {
 } from "./pages";
 
 const Router = () => {
-  const {
-    user: { loggedIn },
-  } = useSession();
+  const { loggedIn } = useSession();
 
   const routes = loggedIn
     ? createBrowserRouter([

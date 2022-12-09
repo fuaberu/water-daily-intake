@@ -6,24 +6,41 @@ import {
   useEffect,
   useState,
 } from "react";
+import { Spinner } from "../components";
 import { auth } from "../config/firebase";
+import { getUserSettings } from "../library/firebase/firestoreModel";
+import { ISettings } from "../pages";
 
 interface ISession {
-  user: {
-    loggedIn: boolean;
-    data: User | null;
-    settings: {
-      unit: { volume: "ml" | "fl oz"; weight: "kg" | "lbs" };
-    };
-  };
+  loggedIn: boolean;
+  user: User | null;
+  settings: ISettings;
+  setSession: React.Dispatch<React.SetStateAction<ISession>>;
 }
 
+export const cups = [
+  { id: 0, name: "small", maxAmount: 100 },
+  { id: 1, name: "medium", maxAmount: 200 },
+  { id: 2, name: "large", maxAmount: 300 },
+  { id: 3, name: "extreme", maxAmount: 1000 },
+];
+
+export const initialSettings: ISettings = {
+  unit: { volume: "ml" as "ml", weight: "kg" as "kg" },
+  bedTime: { hour: 0, minutes: 0 },
+  wakeUpTime: { hour: 0, minutes: 0 },
+  intake: 0,
+  weight: 0,
+  timers: [],
+  gender: null,
+  cup: cups[2],
+};
+
 const initialState: ISession = {
-  user: {
-    data: null,
-    loggedIn: false,
-    settings: { unit: { volume: "ml", weight: "kg" } },
-  },
+  user: null,
+  loggedIn: false,
+  settings: initialSettings,
+  setSession: () => {},
 };
 
 const AuthContext = createContext<ISession>(initialState);
@@ -40,21 +57,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const unsubscribed = auth.onAuthStateChanged(async (user) => {
       setLoading(true);
       if (user) {
+        const settings = await getUserSettings();
         setSession({
-          user: {
-            data: user,
-            loggedIn: true,
-            settings: { unit: { volume: "ml", weight: "kg" } },
-          },
+          user,
+          loggedIn: true,
+          settings: settings ? settings : initialSettings,
+          setSession,
         });
       } else {
-        setSession({
-          user: {
-            data: null,
-            loggedIn: false,
-            settings: { unit: { volume: "ml", weight: "kg" } },
-          },
-        });
+        setSession(initialState);
       }
       setLoading(false);
     });
@@ -63,11 +74,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const value = { ...session, setSession };
+
   return (
-    <AuthContext.Provider value={session}>
+    <AuthContext.Provider value={value}>
       {loading ? (
-        <div>
-          <h2>loading....</h2>
+        <div className="w-full min-h-screen flex items-center justify-center">
+          <Spinner />
+          <h2>Loading....</h2>
         </div>
       ) : (
         children

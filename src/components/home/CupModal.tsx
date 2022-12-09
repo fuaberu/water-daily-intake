@@ -1,20 +1,27 @@
-import { Transition, Dialog } from "@headlessui/react";
-import { useRef, Fragment } from "react";
-
-export interface ICup {
-  quantity: number;
-  name: string;
-}
+import { Transition, Dialog, RadioGroup } from "@headlessui/react";
+import { useRef, Fragment, useState } from "react";
+import { BsFillCupFill } from "react-icons/bs";
+import { cups, useSession } from "../../context/sessionContext";
+import { updateSettings } from "../../library/firebase/firestoreModel";
 
 interface IModal {
   open: boolean;
   setOpen: (arg0: boolean) => void;
-  setCup: (arg0: ICup) => void;
 }
 
-export const CupModal = ({ open, setOpen, setCup }: IModal) => {
+export const CupModal = ({ open, setOpen }: IModal) => {
   const cancelButtonRef = useRef(null);
+  const { settings, setSession } = useSession();
 
+  const setCup = async (id: number) => {
+    const newCup = cups.find((c) => c.id === id);
+    if (!newCup) return;
+    setSession((prev) => ({
+      ...prev,
+      settings: { ...prev.settings, cup: newCup },
+    }));
+    await updateSettings({ cup: newCup });
+  };
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog
@@ -49,20 +56,42 @@ export const CupModal = ({ open, setOpen, setCup }: IModal) => {
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                       <Dialog.Title
                         as="h3"
                         className="text-lg font-medium leading-6 text-gray-900"
                       >
                         Switch Cup
                       </Dialog.Title>
-                      <div className="mt-2">
-                        {[{ quantity: 100, name: "Tea cup" }].map((c) => (
-                          <button key={c.name} onClick={() => setCup(c)}>
-                            {c.quantity}
-                          </button>
+                      <RadioGroup
+                        value={settings.cup.id}
+                        onChange={setCup}
+                        className="mt-2 grid grid-cols-3 gap-4 w-full"
+                      >
+                        {cups.map((c) => (
+                          <RadioGroup.Option
+                            value={c.id}
+                            key={c.name}
+                            className="cursor-pointer"
+                          >
+                            {({ checked }) => (
+                              <>
+                                <span
+                                  className={`flex flex-col items-center justify-center rounded-md py-3 hover:bg-slate-300 ${
+                                    checked ? "bg-blue-200" : ""
+                                  }`}
+                                >
+                                  <BsFillCupFill
+                                    size={20 + (c.maxAmount / 20) * 0.7}
+                                    className="fill-sky-400"
+                                  />
+                                  {`${c.maxAmount} ${settings.unit.volume}`}
+                                </span>
+                              </>
+                            )}
+                          </RadioGroup.Option>
                         ))}
-                      </div>
+                      </RadioGroup>
                     </div>
                   </div>
                 </div>

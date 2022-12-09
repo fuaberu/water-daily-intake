@@ -1,8 +1,14 @@
 import { FirebaseError } from "firebase/app";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  getAdditionalUserInfo,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 import { auth } from "../config/firebase";
 import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
+import { Spinner } from "../components";
+import { createUserInitialSettings } from "../library/firebase/firestoreModel";
 
 export const LoginPage = () => {
   const [loading, setLoading] = useState(false);
@@ -12,6 +18,11 @@ export const LoginPage = () => {
     setLoading(true);
     try {
       const res = await signInWithPopup(auth, googleProvider);
+      if (res) {
+        if (getAdditionalUserInfo(res)?.isNewUser) {
+          await createUserInitialSettings();
+        }
+      }
     } catch (err) {
       if (err instanceof FirebaseError) {
         alert(err.message);
@@ -27,13 +38,7 @@ export const LoginPage = () => {
         className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded flex items-center"
         onClick={signInWithGoogle}
       >
-        {loading ? (
-          <div>
-            <div className="border-t-transparent border-solid animate-spin rounded-full border-slate-500 border-4 h-6 w-6 mr-3"></div>
-          </div>
-        ) : (
-          <FcGoogle size={24} className="mr-3" />
-        )}
+        {loading ? <Spinner /> : <FcGoogle size={24} className="mr-3" />}
         Login With Google
       </button>
     </div>

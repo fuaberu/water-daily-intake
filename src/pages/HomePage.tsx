@@ -4,8 +4,9 @@ import { BsDropletFill, BsDroplet, BsCup, BsCupFill } from "react-icons/bs";
 import { GrUpdate } from "react-icons/gr";
 import { Dropdown } from "../components";
 import { RecordModal } from "../components/home";
-import { CupModal, ICup } from "../components/home/CupModal";
+import { CupModal } from "../components/home/CupModal";
 import { auth, db } from "../config/firebase";
+import { useSession } from "../context/sessionContext";
 import {
   addRegister,
   deleteRegister,
@@ -17,35 +18,40 @@ export interface IRecord {
   id: string;
   time: Date;
   quantity: number;
+  cup: { name: string; maxAmount: number };
   userId?: string;
 }
 
+export interface ICup {
+  id: number;
+  name: string;
+  maxAmount: number;
+}
+
 export const HomePage = () => {
+  const { settings } = useSession();
+
   const [records, setRecords] = useState<IRecord[]>([]);
   const [loadingRecords, setLoadingRecords] = useState(true);
   const recordsQuantity = records.reduce((acc, obj) => {
     return acc + obj.quantity;
   }, 0);
 
-  const [quantity, setQuantity] = useState(300);
-
   const [cupModalOpen, setCupModalOpen] = useState(false);
-  const setCup = (cup: ICup) => {};
-
-  const total = 2860;
-  const unit = "ml";
 
   const addRecord = async () => {
     const ref = doc(collection(db, "records"));
-    const newRegister = {
+    const newRegister: IRecord = {
       time: new Date(),
-      quantity,
+      quantity: settings.cup.maxAmount,
       userId: auth.currentUser?.uid,
       id: ref.id,
+      cup: settings.cup,
     };
     setRecords((prev) => [newRegister, ...prev]);
     await addRegister(newRegister, ref);
   };
+
   const deleteRecord = async (id: string) => {
     if (!id) return;
     setRecords((prev) => prev.filter((r) => r.id !== id));
@@ -53,6 +59,7 @@ export const HomePage = () => {
   };
 
   const [recordModal, setRecordModal] = useState<IRecord | null>(null);
+
   const updateRecordQuantity = async (record: IRecord) => {
     setRecords((rc) => rc.map((r) => (r.id === record.id ? record : r)));
     setRecordModal(null);
@@ -63,7 +70,7 @@ export const HomePage = () => {
     (async () => {
       setLoadingRecords(true);
       const fireRegisters = await getRegisters({
-        dateBegin: ((d) => new Date(d.setDate(d.getDate() - 1)))(new Date()),
+        dateBegin: new Date(new Date().setHours(0, 0, 0, 0)),
       });
       if (fireRegisters) {
         setRecords(
@@ -89,7 +96,11 @@ export const HomePage = () => {
               transform:
                 "rotate(" +
                 (45 +
-                  (recordsQuantity / total > 1 ? 1 : recordsQuantity / total) *
+                  (recordsQuantity / settings.intake > 1
+                    ? 1
+                    : settings.intake > 0
+                    ? recordsQuantity / settings.intake
+                    : 0) *
                     100 *
                     1.8) +
                 "deg)",
@@ -119,8 +130,8 @@ export const HomePage = () => {
               <span className="text-sky-500 font-semibold">
                 {recordsQuantity}
               </span>
-              /<span className="font-bold">{total}</span>
-              <span className="text-sm">ml</span>
+              /<span className="font-bold">{settings.intake}</span>
+              <span className="text-sm">{settings.unit.volume}</span>
             </p>
           ) : (
             <div className="absolute left-1/2 bottom-1/2 -translate-x-1/2 text-3xl flex items-center animate-pulse">
@@ -141,15 +152,22 @@ export const HomePage = () => {
           <div
             style={{
               background: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9v31.8h800v-.2-31.6z' fill='rgb(14 165 233)'/%3E%3C/svg%3E")`,
+              animationDelay: "-7s",
             }}
-            className="w-[200%] h-14 absolute bottom-9 left-[100%] opacity-60 border-none animate-wave-moving2"
+            className="w-[200%] h-14 absolute bottom-9 left-[100%] opacity-80 border-none animate-wave-moving2"
           />
           <div
             style={{
               background: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9v31.8h800v-.2-31.6z' fill='rgb(14 165 233)'/%3E%3C/svg%3E")`,
-              animationDelay: "-1s",
             }}
-            className="w-[200%] h-14 absolute bottom-9 left-[100%] opacity-60 border-none animate-wave-moving z-80"
+            className="w-[200%] h-14 absolute bottom-9 left-[100%] opacity-60 border-none animate-wave-moving3"
+          />
+          <div
+            style={{
+              background: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9v31.8h800v-.2-31.6z' fill='rgb(14 165 233)'/%3E%3C/svg%3E")`,
+              animationDelay: "-3s",
+            }}
+            className="w-[200%] h-14 absolute bottom-9 left-[100%] opacity-60 border-none animate-wave-moving4 z-80"
           />
           <div className="rounded-full absolute top-0 left-0 right-0 bottom-0 overflow-hidden flex items-end z-10">
             <button
@@ -160,7 +178,9 @@ export const HomePage = () => {
               }}
               onClick={addRecord}
             >
-              <p className="font-semibold text-white text-sm">300 ml</p>
+              <p className="font-semibold text-white text-sm">
+                {`${settings.cup.maxAmount} ${settings.unit.volume}`}
+              </p>
               <BsCup size={35} className="text-white" />
             </button>
           </div>
@@ -168,56 +188,67 @@ export const HomePage = () => {
       </section>
       <section className="my-5">
         {!loadingRecords ? (
-          <div className="rounded-lg shadow-xl p-6 w-10/12 max-w-lg mx-auto">
-            {records.map((r, i) => {
-              return (
-                <div key={i} className="flex items-center justify-between my-3">
-                  <BsCupFill className="text-sky-400" />{" "}
-                  <p>
-                    {r.time instanceof Timestamp
-                      ? new Date(r.time.toDate()).toLocaleDateString()
-                      : r.time.toLocaleTimeString()}
-                  </p>
-                  <p>{r.quantity + " " + unit}</p>
-                  <Dropdown
-                    items={[
-                      { text: "Delete", fun: () => deleteRecord(r.id) },
-                      { text: "Edit", fun: () => setRecordModal(r) },
-                    ]}
-                  />
-                </div>
-              );
-            })}
-          </div>
+          records.length > 0 ? (
+            <div className="rounded-lg shadow-xl p-6 w-10/12 max-w-lg mx-auto">
+              {records.map((r, i) => {
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between my-3"
+                  >
+                    <BsCupFill className="text-sky-400 w-1/12 text-left" />{" "}
+                    <p className="w-5/12 text-center">
+                      {r.time instanceof Timestamp
+                        ? new Date(r.time.toDate()).toLocaleDateString()
+                        : r.time.toLocaleTimeString()}
+                    </p>
+                    <p className="w-5/12 text-center">
+                      {r.quantity + " " + settings.unit.volume}
+                    </p>
+                    <Dropdown
+                      items={[
+                        { text: "Delete", fun: () => deleteRecord(r.id) },
+                        { text: "Edit", fun: () => setRecordModal(r) },
+                      ]}
+                      className="w-1/12 text-right"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          ) : null
         ) : (
           <div className="rounded-lg shadow-xl p-6 w-10/12  max-w-lg mx-auto">
-            <div className="flex animate-pulse flex-row items-center space-x-5 my-3">
-              <div className="w-12 bg-gray-300 h-5 rounded-full "></div>
-              <div className="w-36 bg-gray-300 h-5 rounded-md "></div>
-              <div className="w-24 bg-gray-300 h-5 rounded-md "></div>
+            <div className="flex animate-pulse flex-row justify-between items-center space-x-5 my-3">
+              <div className="w-8 bg-gray-300 h-5 rounded-full"></div>
+              <div className="w-24 bg-gray-300 h-5 rounded-md"></div>
+              <div className="w-24 bg-gray-300 h-5 rounded-md"></div>
+              <div className="w-4 bg-gray-300 h-5 rounded-md"></div>
             </div>
             <div
-              className="flex animate-pulse flex-row items-center space-x-5 my-3"
+              className="flex animate-pulse flex-row justify-between items-center space-x-5 my-3"
               style={{ animationDelay: ".3s" }}
             >
-              <div className="w-12 bg-gray-300 h-5 rounded-full "></div>
-              <div className="w-36 bg-gray-300 h-5 rounded-md "></div>
-              <div className="w-24 bg-gray-300 h-5 rounded-md "></div>
+              <div className="w-8 bg-gray-300 h-5 rounded-full"></div>
+              <div className="w-24 bg-gray-300 h-5 rounded-md"></div>
+              <div className="w-24 bg-gray-300 h-5 rounded-md"></div>
+              <div className="w-4 bg-gray-300 h-5 rounded-md"></div>
             </div>
             <div
-              className="flex animate-pulse flex-row items-center space-x-5 my-3"
+              className="flex animate-pulse flex-row justify-between items-center space-x-5 my-3"
               style={{ animationDelay: ".15s" }}
             >
-              <div className="w-12 bg-gray-300 h-5 rounded-full "></div>
-              <div className="w-36 bg-gray-300 h-5 rounded-md "></div>
-              <div className="w-24 bg-gray-300 h-5 rounded-md "></div>
+              <div className="w-8 bg-gray-300 h-5 rounded-full"></div>
+              <div className="w-24 bg-gray-300 h-5 rounded-md"></div>
+              <div className="w-24 bg-gray-300 h-5 rounded-md"></div>
+              <div className="w-4 bg-gray-300 h-5 rounded-md"></div>
             </div>
           </div>
         )}
       </section>
 
       {/* Modals */}
-      <CupModal setOpen={setCupModalOpen} open={cupModalOpen} setCup={setCup} />
+      <CupModal setOpen={setCupModalOpen} open={cupModalOpen} />
       {recordModal && (
         <RecordModal
           setOpen={() => setRecordModal(null)}

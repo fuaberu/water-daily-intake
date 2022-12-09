@@ -67,21 +67,21 @@ export const RecordModal = ({ open, setOpen, setRecord, record }: IModal) => {
                     </div>
                     <p>
                       <span className="font-semibold">Intake at </span>{" "}
-                      {`${record.time.getHours()}:${record.time.getMinutes()}`}
+                      {record.time.toLocaleTimeString()}
                     </p>
                     <div className="my-10">
-                      <Cup value={newIntake / record.quantity} />
+                      <Cup value={newIntake / record.cup.maxAmount} />
                     </div>
                     <div className="flex justify-between my-4">
                       {[0.25, 0.5, 0.75, 1].map((p) => (
                         <button
                           key={p}
                           className="p-1"
-                          onClick={() => setNewIntake(record.quantity * p)}
+                          onClick={() => setNewIntake(record.cup.maxAmount * p)}
                         >
                           <div
                             className={`rounded-full border-2 p-2 hover:border-sky-600 ${
-                              record.quantity * p === newIntake
+                              record.cup.maxAmount * p === newIntake
                                 ? "bg-sky-300"
                                 : "border-slate-400"
                             }`}
@@ -90,7 +90,7 @@ export const RecordModal = ({ open, setOpen, setRecord, record }: IModal) => {
                           </div>
                           <p className="text-xs text-slate-400">
                             {Math.round(
-                              (record.quantity * p + Number.EPSILON) * 100
+                              (record.cup.maxAmount * p + Number.EPSILON) * 100
                             ) / 100}{" "}
                             ml
                           </p>

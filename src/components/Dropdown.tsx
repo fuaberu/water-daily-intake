@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { ComponentType, Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { BiDotsVerticalRounded } from "react-icons/bi";
 
@@ -8,11 +8,12 @@ function classNames(...classes: string[]) {
 
 interface IDrop {
   items: { fun: () => void; text: string }[];
+  className?: React.ComponentProps<"div">["className"];
 }
 
-export const Dropdown = ({ items }: IDrop) => {
+export const Dropdown = ({ items, className }: IDrop) => {
   return (
-    <Menu as="div" className="relative inline-block text-left">
+    <Menu as="div" className={`relative inline-block text-left ${className}`}>
       <div>
         <Menu.Button className="hover:text-sky-500 p-1">
           <BiDotsVerticalRounded aria-hidden="true" />
@@ -28,7 +29,7 @@ export const Dropdown = ({ items }: IDrop) => {
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <Menu.Items className="absolute right-0 z-10 mt-2 max-w-xs min-w-min w-32 text-left origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           <div className="py-1">
             {items.map((i) => (
               <Menu.Item key={i.text}>
