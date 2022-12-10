@@ -24,7 +24,7 @@ export const Layout = () => {
         }
       });
     }
-    setNotOpen(true);
+    setNotOpen(false);
   };
 
   useEffect(() => {
