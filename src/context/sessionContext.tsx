@@ -64,6 +64,22 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           settings: settings ? settings : initialSettings,
           setSession,
         });
+        if (!("Notification" in window)) {
+          console.log("Browser does not support notification");
+        } else if (Notification.permission !== "granted") {
+          Notification.requestPermission((result) => {
+            if (result === "granted") {
+              navigator.serviceWorker.ready.then((registration) => {
+                registration.showNotification("Welcome", {
+                  body: "Thanks for accepting my notifications",
+                  icon: "/water-svg.svg",
+                  vibrate: [200, 100, 200, 100, 200, 100, 200],
+                  tag: "Welcome to Water Reminder!",
+                });
+              });
+            }
+          });
+        }
       } else {
         setSession(initialState);
       }
