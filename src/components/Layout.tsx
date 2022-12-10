@@ -5,7 +5,7 @@ import { MdHistory } from "react-icons/md";
 import { useEffect, useState } from "react";
 
 export const Layout = () => {
-  const [notOpen, setNotOpen] = useState(false);
+  const [notifyOpen, setNotifyOpen] = useState(false);
 
   const askNotificationPermit = () => {
     if (!("Notification" in window)) {
@@ -24,12 +24,12 @@ export const Layout = () => {
         }
       });
     }
-    setNotOpen(false);
+    setNotifyOpen(false);
   };
 
   useEffect(() => {
     if ("Notification" in window && Notification.permission !== "granted") {
-      setNotOpen(true);
+      setNotifyOpen(true);
     }
   }, []);
 
@@ -85,8 +85,8 @@ export const Layout = () => {
         </ul>
       </nav>
       <Outlet />
-      {notOpen && (
-        <div className="absolute left-4 bottom-4 overflow-hidden rounded-lg bg-slate-500 text-left shadow-xl w-full sm:max-w-sm">
+      {notifyOpen && (
+        <div className="absolute left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-4 bottom-4 overflow-hidden rounded-lg bg-slate-500 text-left shadow-xl w-11/12 max-w-sm">
           <div className="p-4 text-white">
             <h3 className="font-semibold text-lg mb-3">
               Accept our Notifications
@@ -106,7 +106,7 @@ export const Layout = () => {
             <button
               type="button"
               className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-              onClick={() => setNotOpen((o) => !o)}
+              onClick={() => setNotifyOpen((o) => !o)}
             >
               Cancel
             </button>
