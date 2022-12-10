@@ -13,18 +13,29 @@ export default defineConfig({
         short_name: "MyApp",
         description:
           "Water Reminder is an APP to help you keep up with your daily water intake goal",
-        theme_color: "#0EA5E9",
+        theme_color: "#38BDF8",
+        background_color: "#ffffff",
+        display: "standalone",
         icons: [
           {
-            src: "water-svg.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "/icon-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
           },
           {
-            src: "water-svg.svg",
-            sizes: "any",
-            type: "image/svg+xml",
-            purpose: "any maskable",
+            src: "/icon-256x256.png",
+            sizes: "256x256",
+            type: "image/png",
+          },
+          {
+            src: "/icon-384x384.png",
+            sizes: "384x384",
+            type: "image/png",
+          },
+          {
+            src: "/icon-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
           },
         ],
       },

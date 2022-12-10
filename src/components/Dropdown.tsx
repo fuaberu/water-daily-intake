@@ -14,11 +14,9 @@ interface IDrop {
 export const Dropdown = ({ items, className }: IDrop) => {
   return (
     <Menu as="div" className={`relative inline-block text-left ${className}`}>
-      <div>
-        <Menu.Button className="hover:text-sky-500 p-1">
-          <BiDotsVerticalRounded aria-hidden="true" />
-        </Menu.Button>
-      </div>
+      <Menu.Button className="hover:text-sky-500 p-1" name="Actions">
+        <BiDotsVerticalRounded aria-hidden="true" />
+      </Menu.Button>
 
       <Transition
         as={Fragment}

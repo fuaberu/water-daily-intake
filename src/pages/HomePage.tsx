@@ -116,6 +116,7 @@ export const HomePage = () => {
         <button
           className="absolute right-1 bottom-0 rounded-full shadow-custom bg-white"
           onClick={() => setCupModalOpen((op) => !op)}
+          name="Change Cup"
         >
           <div className="p-2 rounded-full">
             <BsCup size={35} className="text-black " />
