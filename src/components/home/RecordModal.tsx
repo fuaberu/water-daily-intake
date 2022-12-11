@@ -1,4 +1,5 @@
 import { Transition, Dialog } from "@headlessui/react";
+import { Timestamp } from "firebase/firestore";
 import { useRef, Fragment, useState, useEffect } from "react";
 import { decimalToFraction } from "../../library/helpers";
 import { IRecord } from "../../pages";
@@ -67,7 +68,9 @@ export const RecordModal = ({ open, setOpen, setRecord, record }: IModal) => {
                     </div>
                     <p>
                       <span className="font-semibold">Intake at </span>{" "}
-                      {record.time.toLocaleTimeString()}
+                      {record.time instanceof Timestamp
+                        ? record.time.toDate().toLocaleTimeString()
+                        : record.time.toLocaleTimeString()}
                     </p>
                     <div className="my-10">
                       <Cup value={newIntake / record.cup.maxAmount} />
