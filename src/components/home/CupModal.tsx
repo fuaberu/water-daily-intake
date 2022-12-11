@@ -77,7 +77,7 @@ export const CupModal = ({ open, setOpen }: IModal) => {
                             {({ checked }) => (
                               <>
                                 <span
-                                  className={`flex flex-col items-center justify-center rounded-md py-3 hover:bg-slate-300 ${
+                                  className={`flex flex-col items-center justify-center rounded-md py-3 hover:bg-slate-300 h-full ${
                                     checked ? "bg-blue-200" : ""
                                   }`}
                                 >

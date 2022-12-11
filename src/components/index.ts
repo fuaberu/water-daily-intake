@@ -3,3 +3,4 @@ export * from "./Dropdown";
 export * from "./Switch";
 export * from "./Disclosure";
 export * from "./Spinner";
+export * from "./LoadingScreen";

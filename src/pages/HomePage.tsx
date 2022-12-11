@@ -16,7 +16,7 @@ import {
 
 export interface IRecord {
   id: string;
-  time: Date;
+  time: Date | Timestamp;
   quantity: number;
   cup: { name: string; maxAmount: number };
   userId?: string;
@@ -27,6 +27,8 @@ export interface ICup {
   name: string;
   maxAmount: number;
 }
+
+const audio = new Audio("/pouring-water-into-a-glass.mp3");
 
 export const HomePage = () => {
   const { settings } = useSession();
@@ -40,6 +42,9 @@ export const HomePage = () => {
   const [cupModalOpen, setCupModalOpen] = useState(false);
 
   const addRecord = async () => {
+    if (settings.audioToggle) {
+      audio.play();
+    }
     const ref = doc(collection(db, "records"));
     const newRegister: IRecord = {
       time: new Date(),

@@ -1,14 +1,30 @@
+import { lazy } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Layout } from "./components";
 import { useSession } from "./context/sessionContext";
-import {
-  LoginPage,
-  ErrorPage,
-  HomePage,
-  HistoryPage,
-  SettingsPage,
-  SchedulePage,
-} from "./pages";
+import { ErrorPage, LoginPage } from "./pages";
+
+//  Code Spliting
+const HomePage = lazy(() =>
+  import("./pages").then((modules) => {
+    return { default: modules.HomePage };
+  })
+);
+const HistoryPage = lazy(() =>
+  import("./pages").then((modules) => {
+    return { default: modules.HistoryPage };
+  })
+);
+const SettingsPage = lazy(() =>
+  import("./pages").then((modules) => {
+    return { default: modules.SettingsPage };
+  })
+);
+const SchedulePage = lazy(() =>
+  import("./pages").then((modules) => {
+    return { default: modules.SchedulePage };
+  })
+);
 
 const Router = () => {
   const { loggedIn } = useSession();

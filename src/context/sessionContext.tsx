@@ -6,7 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Spinner } from "../components";
+import { LoadingScreen, Spinner } from "../components";
 import { auth } from "../config/firebase";
 import { getUserSettings } from "../library/firebase/firestoreModel";
 import { ISettings } from "../pages";
@@ -22,7 +22,9 @@ export const cups = [
   { id: 0, name: "small", maxAmount: 100 },
   { id: 1, name: "medium", maxAmount: 200 },
   { id: 2, name: "large", maxAmount: 300 },
-  { id: 3, name: "extreme", maxAmount: 1000 },
+  { id: 3, name: "1xl", maxAmount: 400 },
+  { id: 4, name: "2xl", maxAmount: 500 },
+  { id: 5, name: "extreme", maxAmount: 1000 },
 ];
 
 export const initialSettings: ISettings = {
@@ -34,6 +36,7 @@ export const initialSettings: ISettings = {
   timers: [],
   gender: null,
   cup: cups[2],
+  audioToggle: true,
 };
 
 const initialState: ISession = {
@@ -79,9 +82,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={value}>
       {loading ? (
-        <div className="w-full min-h-screen flex items-center justify-center">
-          <Spinner />
-          <h2>Loading....</h2>
+        <div className="min-h-screen">
+          <LoadingScreen />
         </div>
       ) : (
         children

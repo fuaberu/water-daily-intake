@@ -1,10 +1,14 @@
 import { signOut } from "firebase/auth";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Switch } from "../components";
 import { IntakeGoalsModal } from "../components/settings";
 import { auth } from "../config/firebase";
 import { initialSettings, useSession } from "../context/sessionContext";
-import { resetUserData } from "../library/firebase/firestoreModel";
+import {
+  resetUserData,
+  updateSettings,
+} from "../library/firebase/firestoreModel";
 import { ICup } from "./HomePage";
 import { ITimer } from "./SchedulePage";
 
@@ -17,6 +21,7 @@ export interface ISettings {
   bedTime: { hour: number; minutes: number };
   timers: ITimer[];
   cup: ICup;
+  audioToggle: boolean;
 }
 
 export const SettingsPage = () => {
@@ -30,6 +35,14 @@ export const SettingsPage = () => {
   const resetData = async () => {
     await resetUserData();
     setSession((prev) => ({ ...prev, settings: initialSettings }));
+  };
+
+  const toggleAudio = async () => {
+    setSession((prev) => ({
+      ...prev,
+      settings: { ...prev.settings, audioToggle: !prev.settings.audioToggle },
+    }));
+    await updateSettings({ audioToggle: !settings.audioToggle });
   };
 
   //  Intake
@@ -116,6 +129,24 @@ export const SettingsPage = () => {
         <div className="p-3">
           <h3 className="text-slate-500 border-b-2 border-slate-300">Other</h3>
         </div>
+        <button
+          className="w-full hover:bg-slate-300 active:bg-slate-200 p-3 text-left flex justify-between items-center"
+          onClick={toggleAudio}
+        >
+          Audio
+          <div
+            className={`${
+              settings.audioToggle ? "bg-blue-600" : "bg-gray-200"
+            } relative inline-flex h-6 w-11 items-center rounded-full`}
+          >
+            <span className="sr-only">Enable audio</span>
+            <span
+              className={`${
+                settings.audioToggle ? "translate-x-6" : "translate-x-1"
+              } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+            />
+          </div>
+        </button>
         <button
           className="w-full hover:bg-slate-300 active:bg-slate-200 p-3 text-left"
           onClick={resetData}

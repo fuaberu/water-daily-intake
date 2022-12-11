@@ -2,7 +2,9 @@ import { NavLink, Outlet } from "react-router-dom";
 import { BsDropletHalf } from "react-icons/bs";
 import { IoIosSettings } from "react-icons/io";
 import { MdHistory } from "react-icons/md";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { LoadingScreen } from "./LoadingScreen";
+import { Spinner } from "./Spinner";
 
 export const Layout = () => {
   const [notifyOpen, setNotifyOpen] = useState(false);
@@ -15,8 +17,8 @@ export const Layout = () => {
         if (result === "granted") {
           navigator.serviceWorker.ready.then((registration) => {
             registration.showNotification("Welcome", {
-              body: "Thanks for accepting my notifications",
-              icon: "https://toppng.com//public/uploads/preview/middlefinger-cat-cats-funnycat-meme-memesfreetoedit-middle-finger-cat-11562887943iuk5ajvaeg.png",
+              body: "Thanks for accepting my notifications!! :)",
+              icon: "https://www.kindpng.com/picc/m/3-34478_cute-cat-gatito-tumblr-welcome-png-cute-welcome.png",
               vibrate: [200, 100, 200, 100, 200, 100, 200],
               tag: "Welcome to Water Reminder!",
             });
@@ -84,7 +86,18 @@ export const Layout = () => {
           </li>
         </ul>
       </nav>
-      <Outlet />
+      <Suspense
+        fallback={
+          <div className="mt-[40vh]">
+            <div className="w-full h-full max-h-full flex items-center justify-center">
+              <Spinner />
+              <h2>Loading....</h2>
+            </div>
+          </div>
+        }
+      >
+        <Outlet />
+      </Suspense>
       {notifyOpen && (
         <div className="absolute left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-4 bottom-4 overflow-hidden rounded-lg bg-slate-500 text-left shadow-xl w-11/12 max-w-sm">
           <div className="p-4 text-white">
