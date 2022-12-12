@@ -169,8 +169,18 @@ const getWeekHistory = async () => {
   const query_ = query(
     coll,
     where("userId", "==", auth.currentUser?.uid),
-    where("time", ">=", moment().isoWeekday(1).toDate()),
-    where("time", "<=", moment().isoWeekday(7).toDate())
+    where(
+      "time",
+      ">=",
+      moment({ h: 0, minute: 0, seconds: 0, milliseconds: 1 })
+        .isoWeekday(1)
+        .toDate()
+    ),
+    where(
+      "time",
+      "<=",
+      moment({ h: 23, minute: 59, seconds: 59 }).isoWeekday(7).toDate()
+    )
   );
 
   const res: IRecord[][] = Array(7).fill([]);

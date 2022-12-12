@@ -33,18 +33,15 @@ export const HeightModal = ({ open, setOpen }: IModal) => {
           >
             <span className="text-2xl font-thin">−</span>
           </button>
-          <input
-            type="text"
-            className="outline-none text-center w-14 bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default text-gray-700"
-            value={newHeight + " " + settings.unit.lenght}
-            onChange={(e) =>
-              setNewHeight(
-                Number(
-                  e.target.value.slice(0, -(settings.unit.lenght.length + 1))
-                )
-              )
-            }
-          ></input>
+          <div className="relative flex items-center">
+            <input
+              type="number"
+              className="outline-none text-right w-20 py-2 bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default text-gray-700 pr-6"
+              value={newHeight}
+              onChange={(e) => setNewHeight(Number(e.target.value))}
+            ></input>
+            <span className="absolute right-0">{settings.unit.lenght}</span>
+          </div>
           <button
             data-action="increment"
             className="bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 px-4 rounded-r cursor-pointer"

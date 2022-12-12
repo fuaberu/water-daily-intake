@@ -10,11 +10,16 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   Tooltip,
+  TooltipProps,
 } from "recharts";
 import { IRecord } from "../../pages";
 import { useSession } from "../../context/sessionContext";
 import moment from "moment";
 import "./chart.css";
+import {
+  NameType,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 
 export const Chart = () => {
   const { settings } = useSession();
@@ -80,7 +85,7 @@ export const Chart = () => {
             domain={[0, 100]}
           />
           <XAxis dataKey="name" tickSize={5} fontSize={10} />
-          <Tooltip />
+          <Tooltip content={CustomTooltip} />
           <Bar dataKey="amt" onClick={handleClick}>
             {data.map((_, index) => (
               <Cell
@@ -120,4 +125,22 @@ export const Chart = () => {
       </label>
     </div>
   );
+};
+
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: TooltipProps<ValueType, NameType>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="py-3 px-4 bg-slate-900 text-white font-bold bg-opacity-40 rounded-md border-red-600">
+        <p className="label">{`Day ${label}: ${Math.round(
+          Number(payload[0].value)
+        )}%`}</p>
+      </div>
+    );
+  }
+
+  return null;
 };

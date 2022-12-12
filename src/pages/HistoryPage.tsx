@@ -52,7 +52,7 @@ export const HistoryPage = () => {
             {data.map((d, i) => {
               return (
                 <div className="flex flex-col items-center" key={i}>
-                  <div className="rounded-full bg-sky-600 w-7 h-7 flex justify-center items-center">
+                  <div className="rounded-full bg-sky-600 w-7 h-7 flex justify-center items-center relative duration-300 group">
                     {d.amt >= 100 ? (
                       <FaHeartbeat className="text-green-300" />
                     ) : d.amt > 0 ? (
@@ -60,6 +60,9 @@ export const HistoryPage = () => {
                     ) : (
                       <FaHeartBroken className="text-red-300" />
                     )}
+                    <span className="absolute hidden group-hover:flex -translate-y-full px-2 py-1 bg-gray-700 rounded-lg text-center text-white text-sm after:content-[''] after:absolute after:left-1/2 after:top-[100%] after:-translate-x-1/2 after:border-8 after:border-x-transparent after:border-b-transparent after:border-t-gray-700">
+                      {`${Math.round(d.amt)}%`}
+                    </span>
                   </div>
                   <span>{d.name}</span>
                 </div>
