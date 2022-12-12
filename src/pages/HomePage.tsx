@@ -13,6 +13,7 @@ import {
   editRegister,
   getRegisters,
 } from "../library/firebase/firestoreModel";
+import "./home.css";
 
 export interface IRecord {
   id: string;
@@ -40,8 +41,10 @@ export const HomePage = () => {
   }, 0);
 
   const [cupModalOpen, setCupModalOpen] = useState(false);
+  const [fireworks, setFireworks] = useState(false);
 
   const addRecord = async () => {
+    return setFireworks(true);
     if (settings.audioToggle) {
       audio.play();
     }
@@ -92,7 +95,7 @@ export const HomePage = () => {
   }, []);
 
   return (
-    <div>
+    <>
       <section className="flex justify-center pt-5 mb-5 relative w-80 h-72 m-auto z-30">
         <div className="relative overflow-hidden w-72 h-36 -mb-6">
           <div
@@ -263,6 +266,26 @@ export const HomePage = () => {
           record={recordModal}
         />
       )}
-    </div>
+
+      {/* Effects */}
+      <div
+        className={`absolute top-0 left-0 w-full h-full ${
+          fireworks ? "block bg-opacity-50" : "hidden bg-opacity-0"
+        } bg-black z-50 transition-opacity`}
+      >
+        <div className="relative w-full h-full overflow-hidden">
+          <h3 className="fire-message text-2xl">Today's goal completed!!</h3>
+          <div
+            className="firework"
+            role="img"
+            onAnimationEnd={() => setFireworks(false)}
+          ></div>
+          <div className="firework" role="img"></div>
+          <div className="firework" role="img"></div>
+          <div className="firework" role="img"></div>
+          <div className="firework" role="img"></div>
+        </div>
+      </div>
+    </>
   );
 };
