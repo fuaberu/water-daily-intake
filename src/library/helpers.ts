@@ -32,7 +32,7 @@ export const convertActiveNames = (string: IExercise) => {
     case "lightly-active":
       return "Lightly active";
     case "moderately-active":
-      return "Moderatly active";
+      return "Moderately active";
     case "very-active":
       return "Very active";
 
