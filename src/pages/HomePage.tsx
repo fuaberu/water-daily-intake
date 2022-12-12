@@ -1,5 +1,5 @@
 import { collection, doc, Timestamp } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { BsDropletFill, BsDroplet, BsCup, BsCupFill } from "react-icons/bs";
 import { GrUpdate } from "react-icons/gr";
 import { Dropdown } from "../components";
@@ -36,15 +36,19 @@ export const HomePage = () => {
 
   const [records, setRecords] = useState<IRecord[]>([]);
   const [loadingRecords, setLoadingRecords] = useState(true);
-  const recordsQuantity = records.reduce((acc, obj) => {
-    return acc + obj.quantity;
-  }, 0);
+
+  const recordsQuantity = useMemo(
+    () =>
+      records.reduce((acc, obj) => {
+        return acc + obj.quantity;
+      }, 0),
+    [records]
+  );
 
   const [cupModalOpen, setCupModalOpen] = useState(false);
   const [fireworks, setFireworks] = useState(false);
 
   const addRecord = async () => {
-    return setFireworks(true);
     if (settings.audioToggle) {
       audio.play();
     }
@@ -56,6 +60,9 @@ export const HomePage = () => {
       id: ref.id,
       cup: settings.cup,
     };
+    if (recordsQuantity / settings.intake >= 1) {
+      setFireworks(true);
+    }
     setRecords((prev) => [newRegister, ...prev]);
     await addRegister(newRegister, ref);
   };
@@ -104,7 +111,7 @@ export const HomePage = () => {
               transform:
                 "rotate(" +
                 (45 +
-                  (recordsQuantity / settings.intake > 1
+                  (recordsQuantity / settings.intake >= 1
                     ? 1
                     : settings.intake > 0
                     ? recordsQuantity / settings.intake
@@ -274,7 +281,7 @@ export const HomePage = () => {
         } bg-black z-50 transition-opacity`}
       >
         <div className="relative w-full h-full overflow-hidden">
-          <h3 className="fire-message text-2xl">Today's goal completed!!</h3>
+          <h3 className="fire-message text-2xl">Today's goal completed!!!</h3>
           <div
             className="firework"
             role="img"
