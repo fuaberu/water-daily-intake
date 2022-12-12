@@ -1,25 +1,44 @@
 import { signOut } from "firebase/auth";
+import { Timestamp } from "firebase/firestore";
+import moment from "moment";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Switch } from "../components";
-import { IntakeGoalsModal } from "../components/settings";
+import {
+  ActiveModal,
+  AgeModal,
+  GenderModal,
+  HeightModal,
+  IntakeGoalsModal,
+  WeightModal,
+} from "../components/settings";
 import { auth } from "../config/firebase";
 import { initialSettings, useSession } from "../context/sessionContext";
 import {
   resetUserData,
   updateSettings,
 } from "../library/firebase/firestoreModel";
+import { convertActiveNames } from "../library/helpers";
 import { ICup } from "./HomePage";
-import { ITimer } from "./SchedulePage";
 
+export type IExercise =
+  | "lightly-active"
+  | "moderately-active"
+  | "very-active"
+  | "no-active";
+
+export interface IUnit {
+  volume: "ml" | "oz";
+  weight: "kg" | "lbs";
+  lenght: "cm" | "in";
+}
 export interface ISettings {
-  unit: { volume: "ml" | "oz"; weight: "kg" | "lbs" };
+  unit: IUnit;
   intake: number;
   weight: number;
-  gender: "male" | "female" | null;
-  wakeUpTime: { hour: number; minutes: number };
-  bedTime: { hour: number; minutes: number };
-  timers: ITimer[];
+  height: number;
+  gender: "male" | "female";
+  birthDay: Date | Timestamp;
+  exercise: IExercise;
   cup: ICup;
   audioToggle: boolean;
 }
@@ -45,37 +64,35 @@ export const SettingsPage = () => {
     await updateSettings({ audioToggle: !settings.audioToggle });
   };
 
-  //  Intake
+  //  personal Info
   const [intakeModalOpen, setIntakeModalOpen] = useState(false);
+  const [weightModalOpen, setWeightModalOpen] = useState(false);
+  const [heightModalOpen, setHeightModalOpen] = useState(false);
+  const [ageModalOpen, setAgeModalOpen] = useState(false);
+  const [genderModalOpen, setGenderModalOpen] = useState(false);
+  const [activeModalOpen, setActiveModalOpen] = useState(false);
   return (
     <div className="max-w-2xl mx-auto pb-6">
-      <section>
-        <div className="p-3">
-          <h3 className="text-slate-500 border-b-2 border-slate-300">
-            Reminder Settings
-          </h3>
-        </div>
-        <Link
-          className="block w-full hover:bg-slate-300 active:bg-slate-200 p-3 text-left"
-          to="/schedule"
-        >
-          Reminder Schedule
-        </Link>
-      </section>
       <section>
         <div className="p-3">
           <h3 className="text-slate-500 border-b-2 border-slate-300">
             General
           </h3>
         </div>
-        <button className="w-full hover:bg-slate-300 active:bg-slate-200 p-3">
+        <button
+          className="w-full hover:bg-slate-300 rounded-md active:bg-slate-200 p-3 disabled:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled
+        >
           <div className="flex justify-between">
             <p>Unit</p>
-            <p className="text-sky-600 font-semibold">{`${settings.unit.weight}, ${settings.unit.volume}`}</p>
+            <span className="underline underline-offset-1 decoration-sky-500">
+              Coming soon
+            </span>
+            <p className="text-sky-600 font-semibold">{`${settings.unit.weight}, ${settings.unit.volume}, ${settings.unit.lenght}`}</p>
           </div>
         </button>
         <button
-          className="w-full hover:bg-slate-300 active:bg-slate-200 p-3"
+          className="w-full hover:bg-slate-300 rounded-md active:bg-slate-200 p-3"
           onClick={() => setIntakeModalOpen((o) => !o)}
         >
           <div className="flex justify-between">
@@ -90,7 +107,27 @@ export const SettingsPage = () => {
             Personal Information
           </h3>
         </div>
-        <button className="w-full hover:bg-slate-300 active:bg-slate-200 p-3">
+        <button
+          className="w-full hover:bg-slate-300 rounded-md active:bg-slate-200 p-3"
+          onClick={() => setAgeModalOpen((o) => !o)}
+        >
+          <div className="flex justify-between">
+            <p>Birthday</p>
+            <p className="text-sky-600 font-semibold">
+              {settings.birthDay
+                ? moment(
+                    settings.birthDay instanceof Timestamp
+                      ? settings.birthDay.toDate()
+                      : settings.birthDay
+                  ).format("DD/MM/YYYY")
+                : "Uninformed"}
+            </p>
+          </div>
+        </button>
+        <button
+          className="w-full hover:bg-slate-300 rounded-md active:bg-slate-200 p-3"
+          onClick={() => setGenderModalOpen((o) => !o)}
+        >
           <div className="flex justify-between">
             <p>Gender</p>
             <p className="text-sky-600 font-semibold">
@@ -98,29 +135,32 @@ export const SettingsPage = () => {
             </p>
           </div>
         </button>
-        <button className="w-full hover:bg-slate-300 active:bg-slate-200 p-3">
+        <button
+          className="w-full hover:bg-slate-300 rounded-md active:bg-slate-200 p-3"
+          onClick={() => setWeightModalOpen((o) => !o)}
+        >
           <div className="flex justify-between">
             <p>Weight</p>
             <p className="text-sky-600 font-semibold">{`${settings.weight} ${settings.unit.weight}`}</p>
           </div>
         </button>
-        <button className="w-full hover:bg-slate-300 active:bg-slate-200 p-3">
+        <button
+          className="w-full hover:bg-slate-300 rounded-md active:bg-slate-200 p-3"
+          onClick={() => setHeightModalOpen((o) => !o)}
+        >
           <div className="flex justify-between">
-            <p>Wake-up time</p>
-            <p className="text-sky-600 font-semibold">
-              {settings.wakeUpTime.hour
-                ? `${settings.wakeUpTime.hour}:${settings.wakeUpTime.minutes}`
-                : "-- : --"}
-            </p>
+            <p>Height</p>
+            <p className="text-sky-600 font-semibold">{`${settings.height} ${settings.unit.lenght}`}</p>
           </div>
         </button>
-        <button className="w-full hover:bg-slate-300 active:bg-slate-200 p-3">
+        <button
+          className="w-full hover:bg-slate-300 rounded-md active:bg-slate-200 p-3"
+          onClick={() => setActiveModalOpen((o) => !o)}
+        >
           <div className="flex justify-between">
-            <p>Bedtime</p>
+            <p>Exercise Level</p>
             <p className="text-sky-600 font-semibold">
-              {settings.bedTime.hour
-                ? `${settings.bedTime.hour} : ${settings.bedTime.minutes}`
-                : "-- : --"}
+              {convertActiveNames(settings.exercise)}
             </p>
           </div>
         </button>
@@ -130,7 +170,7 @@ export const SettingsPage = () => {
           <h3 className="text-slate-500 border-b-2 border-slate-300">Other</h3>
         </div>
         <button
-          className="w-full hover:bg-slate-300 active:bg-slate-200 p-3 text-left flex justify-between items-center"
+          className="w-full hover:bg-slate-300 rounded-md active:bg-slate-200 p-3 text-left flex justify-between items-center"
           onClick={toggleAudio}
         >
           Audio
@@ -148,19 +188,24 @@ export const SettingsPage = () => {
           </div>
         </button>
         <button
-          className="w-full hover:bg-slate-300 active:bg-slate-200 p-3 text-left"
+          className="w-full hover:bg-slate-300 rounded-md active:bg-slate-200 p-3 text-left"
           onClick={resetData}
         >
           Reset data
         </button>
         <button
-          className="w-full hover:bg-slate-300 active:bg-slate-200 p-3 text-left"
+          className="w-full hover:bg-slate-300 rounded-md active:bg-slate-200 p-3 text-left"
           onClick={logout}
         >
           Log Out
         </button>
       </section>
       <IntakeGoalsModal open={intakeModalOpen} setOpen={setIntakeModalOpen} />
+      <WeightModal open={weightModalOpen} setOpen={setWeightModalOpen} />
+      <HeightModal open={heightModalOpen} setOpen={setHeightModalOpen} />
+      <AgeModal open={ageModalOpen} setOpen={setAgeModalOpen} />
+      <GenderModal open={genderModalOpen} setOpen={setGenderModalOpen} />
+      <ActiveModal open={activeModalOpen} setOpen={setActiveModalOpen} />
     </div>
   );
 };

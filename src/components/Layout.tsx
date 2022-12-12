@@ -3,7 +3,6 @@ import { BsDropletHalf } from "react-icons/bs";
 import { IoIosSettings } from "react-icons/io";
 import { MdHistory } from "react-icons/md";
 import { Suspense, useEffect, useState } from "react";
-import { LoadingScreen } from "./LoadingScreen";
 import { Spinner } from "./Spinner";
 
 export const Layout = () => {
@@ -12,16 +11,16 @@ export const Layout = () => {
   const askNotificationPermit = () => {
     if (!("Notification" in window)) {
       console.log("Browser does not support notification");
-    } else if (Notification.permission !== "granted") {
+    } else if (Notification.permission === "default") {
+      console.log(Notification.permission);
       Notification.requestPermission((result) => {
+        console.log(result);
         if (result === "granted") {
-          navigator.serviceWorker.ready.then((registration) => {
-            registration.showNotification("Welcome", {
-              body: "Thanks for accepting my notifications!! :)",
-              icon: "https://www.kindpng.com/picc/m/3-34478_cute-cat-gatito-tumblr-welcome-png-cute-welcome.png",
-              vibrate: [200, 100, 200, 100, 200, 100, 200],
-              tag: "Welcome to Water Reminder!",
-            });
+          new Notification("Welcome", {
+            body: "Thanks for accepting my notifications!! :)",
+            icon: "/water-svg.svg",
+            vibrate: [200, 100, 200, 100, 200, 100, 200],
+            tag: "Welcome to Water Reminder!",
           });
         }
       });
@@ -30,7 +29,7 @@ export const Layout = () => {
   };
 
   useEffect(() => {
-    if ("Notification" in window && Notification.permission !== "granted") {
+    if ("Notification" in window && Notification.permission === "default") {
       setNotifyOpen(true);
     }
   }, []);

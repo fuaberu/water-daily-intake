@@ -20,11 +20,11 @@ const SettingsPage = lazy(() =>
     return { default: modules.SettingsPage };
   })
 );
-const SchedulePage = lazy(() =>
-  import("./pages").then((modules) => {
-    return { default: modules.SchedulePage };
-  })
-);
+// const SchedulePage = lazy(() =>
+//   import("./pages").then((modules) => {
+//     return { default: modules.SchedulePage };
+//   })
+// );
 
 const Router = () => {
   const { loggedIn } = useSession();
@@ -39,7 +39,7 @@ const Router = () => {
             { path: "/", element: <HomePage /> },
             { path: "history", element: <HistoryPage /> },
             { path: "settings", element: <SettingsPage /> },
-            { path: "schedule", element: <SchedulePage /> },
+            // { path: "schedule", element: <SchedulePage /> },
           ],
         },
       ])

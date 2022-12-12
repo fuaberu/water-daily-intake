@@ -1,3 +1,5 @@
+import { IExercise } from "../pages";
+
 export function decimalToFraction(num: number) {
   let numsAfterDecPoint = num.toString().split(".")[1]
     ? num.toString().split(".")[1].length
@@ -22,3 +24,19 @@ function GCD(a: number, b: number) {
 
   return a;
 }
+
+export const convertActiveNames = (string: IExercise) => {
+  switch (string) {
+    case "no-active":
+      return "Sedentary";
+    case "lightly-active":
+      return "Lightly active";
+    case "moderately-active":
+      return "Moderatly active";
+    case "very-active":
+      return "Very active";
+
+    default:
+      return "Sedentary";
+  }
+};

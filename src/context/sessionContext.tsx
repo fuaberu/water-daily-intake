@@ -28,13 +28,13 @@ export const cups = [
 ];
 
 export const initialSettings: ISettings = {
-  unit: { volume: "ml" as "ml", weight: "kg" as "kg" },
-  bedTime: { hour: 0, minutes: 0 },
-  wakeUpTime: { hour: 0, minutes: 0 },
+  unit: { volume: "ml" as "ml", weight: "kg" as "kg", lenght: "cm" },
   intake: 0,
   weight: 0,
-  timers: [],
-  gender: null,
+  height: 0,
+  birthDay: new Date(),
+  exercise: "no-active",
+  gender: "female",
   cup: cups[2],
   audioToggle: true,
 };
