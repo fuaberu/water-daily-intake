@@ -1,7 +1,7 @@
 import { Transition, Dialog, RadioGroup } from "@headlessui/react";
-import { useRef, Fragment, useState } from "react";
+import { useRef, Fragment } from "react";
 import { BsFillCupFill } from "react-icons/bs";
-import { cups, useSession } from "../../context/sessionContext";
+import { useSession } from "../../context/sessionContext";
 import { updateSettings } from "../../library/firebase/firestoreModel";
 
 interface IModal {
@@ -14,13 +14,12 @@ export const CupModal = ({ open, setOpen }: IModal) => {
   const { settings, setSession } = useSession();
 
   const setCup = async (id: number) => {
-    const newCup = cups.find((c) => c.id === id);
-    if (!newCup) return;
     setSession((prev) => ({
       ...prev,
-      settings: { ...prev.settings, cup: newCup },
+      settings: { ...prev.settings, cup: id },
     }));
-    await updateSettings({ cup: newCup });
+
+    await updateSettings({ cup: id });
   };
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -64,11 +63,11 @@ export const CupModal = ({ open, setOpen }: IModal) => {
                         Switch Cup
                       </Dialog.Title>
                       <RadioGroup
-                        value={settings.cup.id}
+                        value={settings.cup}
                         onChange={setCup}
                         className="mt-2 grid grid-cols-3 gap-4 w-full"
                       >
-                        {cups.map((c) => (
+                        {settings.cups.map((c) => (
                           <RadioGroup.Option
                             value={c.id}
                             key={c.name}
@@ -82,7 +81,11 @@ export const CupModal = ({ open, setOpen }: IModal) => {
                                   }`}
                                 >
                                   <BsFillCupFill
-                                    size={20 + (c.maxAmount / 20) * 0.7}
+                                    size={
+                                      20 + (c.maxAmount / 20) * 0.7 > 50
+                                        ? 50
+                                        : 20 + (c.maxAmount / 20) * 0.7
+                                    }
                                     className="fill-sky-400"
                                   />
                                   {`${c.maxAmount} ${settings.unit.volume}`}

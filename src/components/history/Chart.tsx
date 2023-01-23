@@ -13,19 +13,32 @@ import {
   TooltipProps,
 } from "recharts";
 import { IRecord } from "../../pages";
-import { useSession } from "../../context/sessionContext";
 import moment from "moment";
 import "./chart.css";
 import {
   NameType,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
+import { ordinalSuffixOf } from "../../library/helpers";
+
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "Setember",
+  "October",
+  "November",
+  "Dezember",
+];
 
 export const Chart = () => {
-  const { settings } = useSession();
   const [dayIndex, setDayIndex] = useState<number | null>(null);
   const [mode, setMode] = useState<"month" | "year" | "week">("month");
-  const [date, setDate] = useState(new Date());
 
   const { data: records } = useQuery({
     queryKey: ["history", mode],
@@ -37,21 +50,37 @@ export const Chart = () => {
     staleTime: Infinity,
   });
 
-  const fromRecordsToData = (rs: IRecord[][]) => {
+  const fromRecordsToData = (rs: IRecord[] | null[]) => {
     const val: { name: string; amt: number }[] = [];
 
     rs.forEach((d, i) => {
-      let amt = d.reduce((acc, r) => acc + r.quantity, 0);
+      let amt = 0;
+      if (d) {
+        amt = d.cups.reduce((acc, r) => acc + r.amount, 0);
 
-      if (mode === "year") {
-        amt = Math.round(
-          (amt / (settings.intake * moment({ month: i }).daysInMonth())) * 100
-        );
-      } else {
-        amt = (amt / settings.intake) * 100;
+        if (mode === "year") {
+          amt = Math.round(
+            (amt / (d.intake.amount * moment({ month: i }).daysInMonth())) * 100
+          );
+        } else {
+          amt = (amt / d.intake.amount) * 100;
+        }
+      }
+      let name = "";
+      switch (mode) {
+        case "year":
+          name = months[i];
+          break;
+        case "month":
+          name = ordinalSuffixOf(i);
+          break;
+
+        default:
+          name = (i + 1).toString();
+          break;
       }
       val.push({
-        name: (i + 1).toString(),
+        name,
         amt,
       });
     });
@@ -135,7 +164,7 @@ const CustomTooltip = ({
   if (active && payload && payload.length) {
     return (
       <div className="py-3 px-4 bg-slate-900 text-white font-bold bg-opacity-40 rounded-md border-red-600">
-        <p className="label">{`Day ${label}: ${Math.round(
+        <p className="label">{`${label}: ${Math.round(
           Number(payload[0].value)
         )}%`}</p>
       </div>

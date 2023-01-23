@@ -2,8 +2,6 @@ import { useState } from "react";
 import { useSession } from "../../context/sessionContext";
 import { BaseModal } from "../BaseModal";
 import { updateSettings } from "../../library/firebase/firestoreModel";
-import { Timestamp } from "firebase/firestore";
-import moment from "moment";
 import { Listbox } from "@headlessui/react";
 import { MdCheck } from "react-icons/md";
 

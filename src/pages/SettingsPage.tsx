@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   ActiveModal,
   AgeModal,
+  CustomCupModal,
   GenderModal,
   HeightModal,
   IntakeGoalsModal,
@@ -27,10 +28,15 @@ export type IExercise =
   | "no-active";
 
 export interface IUnit {
-  volume: "ml" | "oz";
-  weight: "kg" | "lbs";
-  lenght: "cm" | "in";
+  volume: IVolumeUnit;
+  weight: IWeightUnit;
+  lenght: ILengthUnit;
 }
+
+export type IVolumeUnit = "ml" | "oz";
+export type IWeightUnit = "kg" | "lbs";
+export type ILengthUnit = "cm" | "in";
+
 export interface ISettings {
   unit: IUnit;
   intake: number;
@@ -39,8 +45,9 @@ export interface ISettings {
   gender: "male" | "female";
   birthDay: Date | Timestamp;
   exercise: IExercise;
-  cup: ICup;
+  cup: number;
   audioToggle: boolean;
+  cups: ICup[];
 }
 
 export const SettingsPage = () => {
@@ -66,6 +73,7 @@ export const SettingsPage = () => {
 
   //  personal Info
   const [intakeModalOpen, setIntakeModalOpen] = useState(false);
+  const [customCupOpen, setCustomCupOpen] = useState(false);
   const [weightModalOpen, setWeightModalOpen] = useState(false);
   const [heightModalOpen, setHeightModalOpen] = useState(false);
   const [ageModalOpen, setAgeModalOpen] = useState(false);
@@ -98,6 +106,15 @@ export const SettingsPage = () => {
           <div className="flex justify-between">
             <p>Intake Goal</p>
             <p className="text-sky-600 font-semibold">{`${settings.intake} ${settings.unit.volume}`}</p>
+          </div>
+        </button>
+        <button
+          className="w-full hover:bg-slate-300 rounded-md active:bg-slate-200 p-3"
+          onClick={() => setCustomCupOpen((o) => !o)}
+        >
+          <div className="flex justify-between">
+            <p>Custom Cup</p>
+            <p className="text-sky-600 font-semibold">{`${settings.cups[8].maxAmount} ${settings.unit.volume}`}</p>
           </div>
         </button>
       </section>
@@ -201,6 +218,7 @@ export const SettingsPage = () => {
         </button>
       </section>
       <IntakeGoalsModal open={intakeModalOpen} setOpen={setIntakeModalOpen} />
+      <CustomCupModal open={customCupOpen} setOpen={setCustomCupOpen} />
       <WeightModal open={weightModalOpen} setOpen={setWeightModalOpen} />
       <HeightModal open={heightModalOpen} setOpen={setHeightModalOpen} />
       <AgeModal open={ageModalOpen} setOpen={setAgeModalOpen} />

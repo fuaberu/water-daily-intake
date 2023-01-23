@@ -6,10 +6,10 @@ import {
   useEffect,
   useState,
 } from "react";
-import { LoadingScreen, Spinner } from "../components";
+import { LoadingScreen } from "../components";
 import { auth } from "../config/firebase";
 import { getUserSettings } from "../library/firebase/firestoreModel";
-import { ISettings } from "../pages";
+import { ICup, ISettings } from "../pages";
 
 interface ISession {
   loggedIn: boolean;
@@ -18,13 +18,16 @@ interface ISession {
   setSession: React.Dispatch<React.SetStateAction<ISession>>;
 }
 
-export const cups = [
+const cups: ICup[] = [
   { id: 0, name: "small", maxAmount: 100 },
   { id: 1, name: "medium", maxAmount: 200 },
   { id: 2, name: "large", maxAmount: 300 },
   { id: 3, name: "1xl", maxAmount: 400 },
   { id: 4, name: "2xl", maxAmount: 500 },
-  { id: 5, name: "extreme", maxAmount: 1000 },
+  { id: 5, name: "3xl", maxAmount: 600 },
+  { id: 6, name: "4xl", maxAmount: 700 },
+  { id: 7, name: "5xl", maxAmount: 800 },
+  { id: 8, name: "custom", maxAmount: 1000 },
 ];
 
 export const initialSettings: ISettings = {
@@ -35,8 +38,9 @@ export const initialSettings: ISettings = {
   birthDay: new Date(),
   exercise: "no-active",
   gender: "female",
-  cup: cups[2],
+  cup: 2,
   audioToggle: true,
+  cups,
 };
 
 const initialState: ISession = {

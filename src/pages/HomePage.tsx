@@ -1,4 +1,4 @@
-import { collection, doc, Timestamp } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
 import { useEffect, useState, useMemo } from "react";
 import { BsDropletFill, BsDroplet, BsCup, BsCupFill } from "react-icons/bs";
 import { GrUpdate } from "react-icons/gr";
@@ -14,13 +14,22 @@ import {
   getRegisters,
 } from "../library/firebase/firestoreModel";
 import "./home.css";
+import moment from "moment";
+import { IUnit, IVolumeUnit } from "./SettingsPage";
 
 export interface IRecord {
   id: string;
-  time: Date | Timestamp;
-  quantity: number;
-  cup: { name: string; maxAmount: number };
+  date: Date | Timestamp;
+  cups: ICupRecord[];
   userId?: string;
+  intake: { amount: number; unit: IVolumeUnit };
+}
+
+export interface ICupRecord {
+  id: number;
+  amount: number;
+  time: Date | Timestamp;
+  cup: number;
 }
 
 export interface ICup {
@@ -34,15 +43,21 @@ const audio = new Audio("/pouring-water-into-a-glass.mp3");
 export const HomePage = () => {
   const { settings } = useSession();
 
-  const [records, setRecords] = useState<IRecord[]>([]);
+  const [record, setRecord] = useState<IRecord>({
+    id: `${auth.currentUser?.uid}-${moment().format("yyyyMMD")}`,
+    cups: [],
+    date: new Date(),
+    userId: auth.currentUser?.uid,
+    intake: { amount: settings.intake, unit: settings.unit.volume },
+  });
   const [loadingRecords, setLoadingRecords] = useState(true);
 
   const recordsQuantity = useMemo(
     () =>
-      records.reduce((acc, obj) => {
-        return acc + obj.quantity;
-      }, 0),
-    [records]
+      record?.cups.reduce((acc, obj) => {
+        return acc + obj.amount;
+      }, 0) || 0,
+    [record]
   );
 
   const [cupModalOpen, setCupModalOpen] = useState(false);
@@ -52,50 +67,62 @@ export const HomePage = () => {
     if (settings.audioToggle) {
       audio.play();
     }
-    const ref = doc(collection(db, "records"));
-    const newRegister: IRecord = {
+
+    const newRegister: ICupRecord = {
       time: new Date(),
-      quantity: settings.cup.maxAmount,
-      userId: auth.currentUser?.uid,
-      id: ref.id,
+      amount: settings.cups[settings.cup].maxAmount,
+      id: new Date().getTime(),
       cup: settings.cup,
     };
-    if (recordsQuantity / settings.intake >= 1) {
+
+    if (
+      recordsQuantity + newRegister.amount / settings.intake >= 1 &&
+      recordsQuantity < settings.intake
+    ) {
       setFireworks(true);
     }
-    setRecords((prev) => [newRegister, ...prev]);
-    await addRegister(newRegister, ref);
+    setRecord((prev) => ({ ...prev, cups: [...prev.cups, newRegister] }));
+    await addRegister(newRegister, record.id);
   };
 
-  const deleteRecord = async (id: string) => {
-    if (!id) return;
-    setRecords((prev) => prev.filter((r) => r.id !== id));
-    await deleteRegister(id);
+  const deleteRecord = async (cupRec: ICupRecord) => {
+    if (!cupRec) return;
+    setRecord((prev) => ({
+      ...prev,
+      cups: prev.cups.filter((r) => r.id !== cupRec.id),
+    }));
+    await deleteRegister(record.id, cupRec);
   };
 
-  const [recordModal, setRecordModal] = useState<IRecord | null>(null);
+  const [recordModal, setRecordModal] = useState<ICupRecord | null>(null);
 
-  const updateRecordQuantity = async (record: IRecord) => {
-    setRecords((rc) => rc.map((r) => (r.id === record.id ? record : r)));
+  const updateRecordQuantity = async (
+    recordCup: ICupRecord,
+    prev: ICupRecord
+  ) => {
+    setRecord((prev) => ({
+      ...prev,
+      cups: prev.cups.map((r) => (r.id === recordCup.id ? recordCup : r)),
+    }));
     setRecordModal(null);
-    await editRegister(record.id, { quantity: record.quantity });
+    await editRegister(record.id, prev, recordCup);
   };
 
   useEffect(() => {
     (async () => {
       setLoadingRecords(true);
-      const fireRegisters = await getRegisters({
-        dateBegin: new Date(new Date().setHours(0, 0, 0, 0)),
-      });
+      let fireRegisters = await getRegisters(
+        `${auth.currentUser?.uid}-${moment().format("yyyyMMD")}`,
+        record
+      );
       if (fireRegisters) {
-        setRecords(
-          fireRegisters.map((r) => ({
-            ...r,
-            time: new Date(
-              r.time instanceof Timestamp ? r.time.toDate() : r.time
-            ),
-          }))
-        );
+        fireRegisters.cups = fireRegisters.cups.map((r) => ({
+          ...r,
+          time: new Date(
+            r.time instanceof Timestamp ? r.time.toDate() : r.time
+          ),
+        }));
+        setRecord(fireRegisters);
       }
       setLoadingRecords(false);
     })();
@@ -195,7 +222,9 @@ export const HomePage = () => {
               onClick={addRecord}
             >
               <p className="font-semibold text-white text-sm">
-                {`${settings.cup.maxAmount} ${settings.unit.volume}`}
+                {`${settings.cups[settings.cup].maxAmount} ${
+                  settings.unit.volume
+                }`}
               </p>
               <BsCup size={35} className="text-white" />
             </button>
@@ -203,10 +232,10 @@ export const HomePage = () => {
         </div>
       </section>
       <section className="my-5">
-        {!loadingRecords ? (
-          records.length > 0 ? (
+        {!loadingRecords && record ? (
+          record.cups.length > 0 ? (
             <div className="rounded-lg shadow-xl p-6 w-10/12 max-w-lg mx-auto">
-              {records.map((r, i) => {
+              {record.cups.map((r, i) => {
                 return (
                   <div
                     key={i}
@@ -219,11 +248,11 @@ export const HomePage = () => {
                         : r.time.toLocaleTimeString()}
                     </p>
                     <p className="w-5/12 text-center">
-                      {r.quantity + " " + settings.unit.volume}
+                      {r.amount + " " + settings.unit.volume}
                     </p>
                     <Dropdown
                       items={[
-                        { text: "Delete", fun: () => deleteRecord(r.id) },
+                        { text: "Delete", fun: () => deleteRecord(r) },
                         { text: "Edit", fun: () => setRecordModal(r) },
                       ]}
                       className="w-1/12 text-right"

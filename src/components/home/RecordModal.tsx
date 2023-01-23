@@ -1,28 +1,36 @@
 import { Transition, Dialog } from "@headlessui/react";
 import { Timestamp } from "firebase/firestore";
-import { useRef, Fragment, useState, useEffect } from "react";
+import { useRef, Fragment, useState, useMemo } from "react";
 import { decimalToFraction } from "../../library/helpers";
-import { IRecord } from "../../pages";
+import { ICupRecord } from "../../pages";
 import { Cup } from "./cup/Cup";
+import { useSession } from "../../context/sessionContext";
 
 interface IModal {
   open: boolean;
   setOpen: (arg0: boolean) => void;
-  setRecord: (arg0: IRecord) => void;
-  record: IRecord;
+  setRecord: (arg0: ICupRecord, arg1: ICupRecord) => void;
+  record: ICupRecord;
 }
 
 export const RecordModal = ({ open, setOpen, setRecord, record }: IModal) => {
+  const { settings } = useSession();
+
   const cancelButtonRef = useRef(null);
-  const [newIntake, setNewIntake] = useState(record.quantity);
+  const [newIntake, setNewIntake] = useState(record.amount);
 
   const updateRecord = () => {
     setOpen(false);
-    setRecord({
-      ...record,
-      quantity: Math.round((newIntake + Number.EPSILON) * 100) / 100,
-    });
+    setRecord(
+      {
+        ...record,
+        amount: Math.round((newIntake + Number.EPSILON) * 100) / 100,
+      },
+      record
+    );
   };
+
+  const currentCup = useMemo(() => settings.cups[record.cup], [record]);
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -73,18 +81,18 @@ export const RecordModal = ({ open, setOpen, setRecord, record }: IModal) => {
                         : record.time.toLocaleTimeString()}
                     </p>
                     <div className="my-10">
-                      <Cup value={newIntake / record.cup.maxAmount} />
+                      <Cup value={newIntake / record.amount} />
                     </div>
                     <div className="flex justify-between my-4">
                       {[0.25, 0.5, 0.75, 1].map((p) => (
                         <button
                           key={p}
                           className="p-1"
-                          onClick={() => setNewIntake(record.cup.maxAmount * p)}
+                          onClick={() => setNewIntake(currentCup.maxAmount * p)}
                         >
                           <div
                             className={`rounded-full border-2 p-2 hover:border-sky-600 ${
-                              record.cup.maxAmount * p === newIntake
+                              currentCup.maxAmount * p === newIntake
                                 ? "bg-sky-300"
                                 : "border-slate-400"
                             }`}
@@ -93,7 +101,7 @@ export const RecordModal = ({ open, setOpen, setRecord, record }: IModal) => {
                           </div>
                           <p className="text-xs text-slate-400">
                             {Math.round(
-                              (record.cup.maxAmount * p + Number.EPSILON) * 100
+                              (currentCup.maxAmount * p + Number.EPSILON) * 100
                             ) / 100}{" "}
                             ml
                           </p>

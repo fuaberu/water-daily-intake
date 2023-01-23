@@ -1,17 +1,12 @@
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import {
-  addDoc,
+  arrayRemove,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
-  DocumentData,
-  DocumentReference,
-  getCountFromServer,
   getDoc,
   getDocs,
-  orderBy,
   query,
-  runTransaction,
   setDoc,
   Timestamp,
   updateDoc,
@@ -21,79 +16,43 @@ import {
 import moment from "moment";
 import { auth, db } from "../../config/firebase";
 import { initialSettings } from "../../context/sessionContext";
-import { ICup, IRecord, ISettings } from "../../pages";
+import { ICupRecord, IRecord, ISettings } from "../../pages";
 
 //  REGISTER  //
 
-export const addRegister = async (
-  record: IRecord,
-  ref: DocumentReference<DocumentData>
-) => {
-  try {
-    return await setDoc(ref, record);
-  } catch (error) {
-    console.log(error);
-    return false;
-  }
+export const addRegister = async (record: ICupRecord, recordId: string) => {
+  const ref = doc(db, "records", recordId);
+
+  return await updateDoc(ref, { cups: arrayUnion(record) });
 };
 
-export const getRegisters = async ({
-  dateBegin,
-  dateEnd,
-}: {
-  dateBegin?: Date;
-  dateEnd?: Date;
-}) => {
-  let q = null;
+export const getRegisters = async (id: string, newReg: IRecord) => {
+  const docRef = doc(db, "records", id);
+  const recordData = await getDoc(docRef);
 
-  if (dateBegin && dateEnd) {
-    q = query(
-      collection(db, "records"),
-      where("userId", "==", auth.currentUser?.uid),
-      where("time", ">=", dateBegin),
-      where("time", "<=", dateEnd),
-      orderBy("time", "desc")
-    );
-  } else if (dateEnd) {
-    q = query(
-      collection(db, "records"),
-      where("userId", "==", auth.currentUser?.uid),
-      where("time", "<=", dateEnd),
-      orderBy("time", "desc")
-    );
-  } else if (dateBegin) {
-    q = query(
-      collection(db, "records"),
-      where("userId", "==", auth.currentUser?.uid),
-      where("time", ">=", dateBegin),
-      orderBy("time", "desc")
-    );
-  } else {
-    q = query(
-      collection(db, "records"),
-      where("userId", "==", auth.currentUser?.uid),
-      orderBy("time", "desc")
-    );
+  if (!recordData.data()) {
+    await setDoc(docRef, newReg);
+    return newReg;
   }
 
-  const querySnapshot = await getDocs(q);
-
-  const res: IRecord[] = [];
-
-  querySnapshot.forEach((doc) => {
-    res.push(doc.data() as IRecord);
-  });
-  return res;
+  return recordData.data() as IRecord | undefined;
 };
 
-export const deleteRegister = async (id: string) => {
-  return await deleteDoc(doc(db, "records", id));
-};
-
-export const editRegister = async (id: string, dados: Partial<IRecord>) => {
+export const deleteRegister = async (id: string, record: ICupRecord) => {
   const ref = doc(db, "records", id);
 
-  return await updateDoc(ref, { ...dados });
+  return await updateDoc(ref, { cups: arrayRemove(record) });
+};
+
+export const editRegister = async (
+  id: string,
+  prev: ICupRecord,
+  newRec: ICupRecord
+) => {
+  const ref = doc(db, "records", id);
+
+  await updateDoc(ref, { cups: arrayRemove(prev) });
+  return await updateDoc(ref, { cups: arrayUnion(newRec) });
 };
 
 export const getHistory = async (
@@ -103,7 +62,6 @@ export const getHistory = async (
   },
   mode: "year" | "month" | "week"
 ) => {
-  console.log(mode);
   if (mode === "month") {
     return getMonthHistory(date);
   } else if (mode === "year") {
@@ -115,23 +73,24 @@ export const getHistory = async (
 
 const getMonthHistory = async (date: { month: number; year: number }) => {
   const coll = collection(db, "records");
+
   const query_ = query(
     coll,
     where("userId", "==", auth.currentUser?.uid),
-    where("time", ">=", moment(date).startOf("month").toDate()),
-    where("time", "<=", moment(date).endOf("month").toDate())
+    where("date", ">=", moment(date).startOf("month").toDate()),
+    where("date", "<=", moment(date).endOf("month").toDate())
   );
   const querySnapshot = await getDocs(query_);
 
-  const res: IRecord[][] = Array(moment(date).daysInMonth()).fill([]);
+  const res: IRecord[] = Array(moment(date).daysInMonth()).fill(null);
 
   querySnapshot.forEach((doc) => {
     const docData = doc.data() as IRecord;
     const day =
-      docData.time instanceof Timestamp
-        ? docData.time.toDate().getDate() - 1
-        : docData.time.getDate() - 1;
-    res[day] = [...res[day], docData];
+      docData.date instanceof Timestamp
+        ? docData.date.toDate().getDate() - 1
+        : docData.date.getDate() - 1;
+    res[day] = docData;
   });
 
   return res;
@@ -143,21 +102,21 @@ const getYearHistory = async () => {
   const query_ = query(
     coll,
     where("userId", "==", auth.currentUser?.uid),
-    where("time", ">=", moment().subtract(12, "months").toDate()),
-    where("time", "<=", moment().toDate())
+    where("date", ">=", moment().subtract(12, "months").toDate()),
+    where("date", "<=", moment().toDate())
   );
 
-  const res: IRecord[][] = Array(12).fill([]);
+  const res: IRecord[] = Array(12).fill(null);
 
   const querySnapshot = await getDocs(query_);
 
   querySnapshot.forEach((doc) => {
     const docData = doc.data() as IRecord;
     const month =
-      docData.time instanceof Timestamp
-        ? docData.time.toDate().getMonth()
-        : docData.time.getMonth();
-    res[month] = [...res[month], docData];
+      docData.date instanceof Timestamp
+        ? docData.date.toDate().getMonth()
+        : docData.date.getMonth();
+    res[month] = docData;
   });
 
   return res;
@@ -170,34 +129,34 @@ const getWeekHistory = async () => {
     coll,
     where("userId", "==", auth.currentUser?.uid),
     where(
-      "time",
+      "date",
       ">=",
       moment({ h: 0, minute: 0, seconds: 0, milliseconds: 1 })
         .isoWeekday(1)
         .toDate()
     ),
     where(
-      "time",
+      "date",
       "<=",
       moment({ h: 23, minute: 59, seconds: 59 }).isoWeekday(7).toDate()
     )
   );
 
-  const res: IRecord[][] = Array(7).fill([]);
+  const res: IRecord[] = Array(7).fill(null);
 
   const querySnapshot = await getDocs(query_);
 
   querySnapshot.forEach((doc) => {
     const docData = doc.data() as IRecord;
     const day =
-      docData.time instanceof Timestamp
-        ? docData.time.toDate().getDay() > 0
-          ? docData.time.toDate().getDay() - 1
+      docData.date instanceof Timestamp
+        ? docData.date.toDate().getDay() > 0
+          ? docData.date.toDate().getDay() - 1
           : 6
-        : docData.time.getDay() > 0
-        ? docData.time.getDay() - 1
+        : docData.date.getDay() > 0
+        ? docData.date.getDay() - 1
         : 6;
-    res[day] = [...res[day], docData];
+    res[day] = docData;
   });
 
   return res;

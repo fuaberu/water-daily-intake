@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Chart } from "../components/history/Chart";
-import { useSession } from "../context/sessionContext";
 import { getHistory } from "../library/firebase/firestoreModel";
 import { IRecord } from "./HomePage";
 import { FaHeartbeat, FaHeartBroken, FaHeart } from "react-icons/fa";
@@ -9,7 +8,6 @@ import { FaHeartbeat, FaHeartBroken, FaHeart } from "react-icons/fa";
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export const HistoryPage = () => {
-  const { settings } = useSession();
   const { data: records } = useQuery({
     queryKey: ["history", "week"],
     queryFn: ({ queryKey }) =>
@@ -20,13 +18,15 @@ export const HistoryPage = () => {
     staleTime: Infinity,
   });
 
-  const fromRecordsToData = (rs: IRecord[][]) => {
+  const fromRecordsToData = (daysRec: IRecord[]) => {
     const val: { name: string; amt: number }[] = [];
 
-    rs.forEach((d, i) => {
-      let amt = d.reduce((acc, r) => acc + r.quantity, 0);
-      amt = (amt / settings.intake) * 100;
-      console.log(d, i);
+    daysRec.forEach((d, i) => {
+      let amt = 0;
+      if (d) {
+        amt = d.cups.reduce((acc, r) => acc + r.amount, 0);
+        amt = (amt / d.intake.amount) * 100;
+      }
 
       val.push({
         name: days[i],
@@ -40,6 +40,7 @@ export const HistoryPage = () => {
     () => (records ? fromRecordsToData(records) : []),
     [records]
   );
+
   return (
     <div className="h-80 mt-6">
       <div className="max-w-3xl m-auto">
