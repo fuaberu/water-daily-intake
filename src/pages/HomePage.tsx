@@ -81,7 +81,7 @@ export const HomePage = () => {
     ) {
       setFireworks(true);
     }
-    setRecord((prev) => ({ ...prev, cups: [...prev.cups, newRegister] }));
+    setRecord((prev) => ({ ...prev, cups: [newRegister, ...prev.cups] }));
     await addRegister(newRegister, record.id);
   };
 

@@ -30,12 +30,14 @@ export const getRegisters = async (id: string, newReg: IRecord) => {
   const docRef = doc(db, "records", id);
   const recordData = await getDoc(docRef);
 
-  if (!recordData.data()) {
-    await setDoc(docRef, newReg);
-    return newReg;
+  if (recordData.data()) {
+    const returnRegs = recordData.data() as IRecord;
+    returnRegs.cups = returnRegs?.cups.sort((a, b) => b.id - a.id);
+    return returnRegs;
   }
 
-  return recordData.data() as IRecord | undefined;
+  await setDoc(docRef, newReg);
+  return newReg;
 };
 
 export const deleteRegister = async (id: string, record: ICupRecord) => {

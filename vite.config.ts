@@ -9,10 +9,10 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "Water Reminder",
-        short_name: "MyApp",
+        name: "Water Tracker",
+        short_name: "Water Tracker",
         description:
-          "Water Reminder is an APP to help you keep up with your daily water intake goal",
+          "Water Tracker is an APP to help you keep up with your daily water intake goal",
         theme_color: "#38BDF8",
         background_color: "#ffffff",
         display: "standalone",
