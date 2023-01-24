@@ -57,34 +57,42 @@ export const editRegister = async (
   return await updateDoc(ref, { cups: arrayUnion(newRec) });
 };
 
-export const getHistory = async (
-  date: {
-    month: number;
-    year: number;
-  },
-  mode: "year" | "month" | "week"
+export const editRecordIntake = async (
+  id: string,
+  amount: number,
+  unit: string
 ) => {
-  if (mode === "month") {
-    return getMonthHistory(date);
-  } else if (mode === "year") {
-    return getYearHistory();
-  } else if (mode === "week") {
-    return getWeekHistory();
+  const ref = doc(db, "records", id);
+
+  return await updateDoc(ref, { intake: { amount, unit } });
+};
+
+export const getHistory = async (mode: "year" | "month" | "week") => {
+  switch (mode) {
+    case "month":
+      return getMonthHistory();
+    case "year":
+      return getYearHistory();
+    case "week":
+      return getWeekHistory();
+
+    default:
+      return [];
   }
 };
 
-const getMonthHistory = async (date: { month: number; year: number }) => {
+const getMonthHistory = async () => {
   const coll = collection(db, "records");
 
   const query_ = query(
     coll,
     where("userId", "==", auth.currentUser?.uid),
-    where("date", ">=", moment(date).startOf("month").toDate()),
-    where("date", "<=", moment(date).endOf("month").toDate())
+    where("date", ">=", moment().startOf("month").toDate()),
+    where("date", "<=", moment().endOf("month").toDate())
   );
   const querySnapshot = await getDocs(query_);
 
-  const res: IRecord[] = Array(moment(date).daysInMonth()).fill(null);
+  const res: IRecord[] = Array(moment().daysInMonth()).fill(null);
 
   querySnapshot.forEach((doc) => {
     const docData = doc.data() as IRecord;

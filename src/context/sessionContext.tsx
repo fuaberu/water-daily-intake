@@ -8,13 +8,18 @@ import {
 } from "react";
 import { LoadingScreen } from "../components";
 import { auth } from "../config/firebase";
-import { getUserSettings } from "../library/firebase/firestoreModel";
-import { ICup, ISettings } from "../pages";
+import {
+  getRegisters,
+  getUserSettings,
+} from "../library/firebase/firestoreModel";
+import { ICup, IRecord, ISettings } from "../pages";
+import moment from "moment";
 
 interface ISession {
   loggedIn: boolean;
   user: User | null;
   settings: ISettings;
+  record: IRecord;
   setSession: React.Dispatch<React.SetStateAction<ISession>>;
 }
 
@@ -43,10 +48,19 @@ export const initialSettings: ISettings = {
   cups,
 };
 
+const initialRecord = {
+  id: `${auth.currentUser?.uid}-${moment().format("yyyyMMD")}`,
+  cups: [],
+  date: new Date(),
+  userId: auth.currentUser?.uid,
+  intake: { amount: initialSettings.intake, unit: initialSettings.unit.volume },
+};
+
 const initialState: ISession = {
   user: null,
   loggedIn: false,
   settings: initialSettings,
+  record: initialRecord,
   setSession: () => {},
 };
 
@@ -65,10 +79,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       if (user) {
         const settings = await getUserSettings();
+        const register = await getRegisters(
+          `${auth.currentUser?.uid}-${moment().format("yyyyMMD")}`,
+          initialRecord
+        );
         setSession({
           user,
           loggedIn: true,
           settings: settings ? settings : initialSettings,
+          record: register,
           setSession,
         });
       } else {

@@ -11,10 +11,7 @@ export const HistoryPage = () => {
   const { data: records } = useQuery({
     queryKey: ["history", "week"],
     queryFn: ({ queryKey }) =>
-      getHistory(
-        { year: 2022, month: 11 },
-        queryKey[1] as "month" | "year" | "week"
-      ),
+      getHistory(queryKey[1] as "month" | "year" | "week"),
     staleTime: Infinity,
   });
 
@@ -27,6 +24,8 @@ export const HistoryPage = () => {
         amt = d.cups.reduce((acc, r) => acc + r.amount, 0);
         amt = (amt / d.intake.amount) * 100;
       }
+
+      amt = Math.min(Math.max(amt, 0), 100);
 
       val.push({
         name: days[i],

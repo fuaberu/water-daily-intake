@@ -43,10 +43,7 @@ export const Chart = () => {
   const { data: records } = useQuery({
     queryKey: ["history", mode],
     queryFn: ({ queryKey }) =>
-      getHistory(
-        { year: 2022, month: 11 },
-        queryKey[1] as "month" | "year" | "week"
-      ),
+      getHistory(queryKey[1] as "month" | "year" | "week"),
     staleTime: Infinity,
   });
 
@@ -57,7 +54,6 @@ export const Chart = () => {
       let amt = 0;
       if (d) {
         amt = d.cups.reduce((acc, r) => acc + r.amount, 0);
-
         if (mode === "year") {
           amt = Math.round(
             (amt / (d.intake.amount * moment({ month: i }).daysInMonth())) * 100
@@ -72,18 +68,22 @@ export const Chart = () => {
           name = months[i];
           break;
         case "month":
-          name = ordinalSuffixOf(i);
+          name = ordinalSuffixOf(i + 1);
           break;
 
         default:
           name = (i + 1).toString();
           break;
       }
+
+      amt = Math.min(Math.max(amt, 0), 100);
+
       val.push({
         name,
         amt,
       });
     });
+
     return val;
   };
 

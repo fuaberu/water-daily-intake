@@ -2,7 +2,10 @@ import { useState } from "react";
 import { useSession } from "../../context/sessionContext";
 import { BaseModal } from "../BaseModal";
 import { GrUpdate } from "react-icons/gr";
-import { updateSettings } from "../../library/firebase/firestoreModel";
+import {
+  editRecordIntake,
+  updateSettings,
+} from "../../library/firebase/firestoreModel";
 import { calculateWater } from "../../library/calculateWaterIntake";
 import moment from "moment";
 import { Timestamp } from "firebase/firestore";
@@ -13,7 +16,7 @@ interface IModal {
 }
 
 export const IntakeGoalsModal = ({ open, setOpen }: IModal) => {
-  const { settings, setSession } = useSession();
+  const { settings, record, setSession } = useSession();
 
   const [newIntake, setNewIntake] = useState(settings.intake);
 
@@ -23,6 +26,7 @@ export const IntakeGoalsModal = ({ open, setOpen }: IModal) => {
       settings: { ...s.settings, intake: newIntake },
     }));
     await updateSettings({ intake: newIntake });
+    await editRecordIntake(record.id, newIntake, settings.unit.volume);
   };
 
   const calculateAuto = () => {
