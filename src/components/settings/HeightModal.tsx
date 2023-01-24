@@ -35,7 +35,7 @@ export const HeightModal = ({ open, setOpen }: IModal) => {
           </button>
           <div className="relative flex items-center">
             <input
-              type="number"
+              type="text"
               className="outline-none text-right w-20 py-2 bg-gray-300 font-semibold text-md hover:text-black focus:text-black  md:text-basecursor-default text-gray-700 pr-6"
               value={newHeight}
               onChange={(e) => setNewHeight(Number(e.target.value))}

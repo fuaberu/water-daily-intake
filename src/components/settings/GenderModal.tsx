@@ -33,7 +33,7 @@ export const GenderModal = ({ open, setOpen }: IModal) => {
           <Listbox.Button className="bg-gray-300 font-semibold text-md hover:text-black focus:text-black md:text-basecursor-default text-gray-700 py-2 w-8/12 rounded-md uppercase">
             {newGender}
           </Listbox.Button>
-          <Listbox.Options className="w-8/12 rounded-md overflow-hidden mt-1 bg-slate-100">
+          <Listbox.Options className="w-8/12 rounded-md cursor-pointer overflow-hidden mt-1 bg-slate-100">
             {genders.map((gender) => (
               <Listbox.Option
                 className="p-1 w-full"
