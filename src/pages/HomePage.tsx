@@ -212,7 +212,7 @@ export const HomePage = () => {
                   <BsCupFill className="text-sky-400 w-1/12 text-left" />{" "}
                   <p className="w-5/12 text-center">
                     {r.time instanceof Timestamp
-                      ? new Date(r.time.toDate()).toLocaleDateString()
+                      ? new Date(r.time.toDate()).toLocaleTimeString()
                       : r.time.toLocaleTimeString()}
                   </p>
                   <p className="w-5/12 text-center">
