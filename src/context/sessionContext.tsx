@@ -49,10 +49,10 @@ export const initialSettings: ISettings = {
 };
 
 const initialRecord = {
-  id: `${auth.currentUser?.uid}-${moment().format("yyyyMMD")}`,
+  id: "",
   cups: [],
   date: new Date(),
-  userId: auth.currentUser?.uid,
+  userId: undefined,
   intake: { amount: initialSettings.intake, unit: initialSettings.unit.volume },
 };
 
@@ -81,7 +81,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         const settings = await getUserSettings();
         const register = await getRegisters(
           `${auth.currentUser?.uid}-${moment().format("yyyyMMD")}`,
-          initialRecord
+          {
+            ...initialRecord,
+            userId: auth.currentUser?.uid,
+            id: `${auth.currentUser?.uid}-${moment().format("yyyyMMD")}`,
+          }
         );
         setSession({
           user,

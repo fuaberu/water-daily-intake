@@ -20,11 +20,6 @@ const SettingsPage = lazy(() =>
     return { default: modules.SettingsPage };
   })
 );
-// const SchedulePage = lazy(() =>
-//   import("./pages").then((modules) => {
-//     return { default: modules.SchedulePage };
-//   })
-// );
 
 const Router = () => {
   const { loggedIn } = useSession();
