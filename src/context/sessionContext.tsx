@@ -36,7 +36,7 @@ const cups: ICup[] = [
 ];
 
 export const initialSettings: ISettings = {
-  unit: { volume: "ml" as "ml", weight: "kg" as "kg", lenght: "cm" },
+  unit: { volume: "ml", weight: "kg", lenght: "cm" },
   intake: 0,
   weight: 0,
   height: 0,
@@ -52,7 +52,7 @@ const initialRecord = {
   id: "",
   cups: [],
   date: new Date(),
-  userId: undefined,
+  userId: "",
   intake: { amount: initialSettings.intake, unit: initialSettings.unit.volume },
 };
 
@@ -77,26 +77,35 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribed = auth.onAuthStateChanged(async (user) => {
       setLoading(true);
-      if (user) {
-        const settings = await getUserSettings();
-        const register = await getRegisters(
-          `${auth.currentUser?.uid}-${moment().format("yyyyMMD")}`,
-          {
-            ...initialRecord,
-            userId: auth.currentUser?.uid,
-            id: `${auth.currentUser?.uid}-${moment().format("yyyyMMD")}`,
-          }
-        );
-        setSession({
-          user,
-          loggedIn: true,
-          settings: settings ? settings : initialSettings,
-          record: register,
-          setSession,
-        });
-      } else {
+      if (!user) {
         setSession(initialState);
+        setLoading(false);
+        return;
       }
+
+      const settings = await getUserSettings();
+      if (!settings) return setLoading(false);
+
+      const register = await getRegisters(
+        `${auth.currentUser?.uid}-${moment().format("yyyyMMD")}`,
+        {
+          cups: [],
+          date: new Date(),
+          intake: { amount: settings?.intake, unit: settings?.unit.volume },
+          userId: user.uid,
+          id: `${user.uid}-${moment().format("yyyyMMD")}`,
+        }
+      );
+      if (!register) return setLoading(false);
+
+      setSession({
+        user,
+        loggedIn: true,
+        settings: settings ? settings : initialSettings,
+        record: register,
+        setSession,
+      });
+
       setLoading(false);
     });
     return () => {

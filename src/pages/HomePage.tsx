@@ -18,7 +18,7 @@ export interface IRecord {
   id: string;
   date: Date | Timestamp;
   cups: ICupRecord[];
-  userId?: string;
+  userId: string;
   intake: { amount: number; unit: IVolumeUnit };
 }
 
