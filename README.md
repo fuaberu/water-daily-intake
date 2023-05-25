@@ -2,8 +2,12 @@
 
 ## Table of contents
 * [General info](#general-info)
+* [Demo](#demo)
 * [Technologies](#technologies)
 * [Setup](#setup)
+
+## Demo
+[https://water-reminder-web.web.app](https://water-reminder-web.web.app/)
 
 ## General info
 This project is a daily water intake journal. The Application has the intention of helping the user to have a more healthy life by consuming enough water. 
