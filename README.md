@@ -6,13 +6,13 @@
 * [Technologies](#technologies)
 * [Setup](#setup)
 
-## Demo
-[https://water-reminder-web.web.app](https://water-reminder-web.web.app/)
-
 ## General info
 This project is a daily water intake journal. The Application has the intention of helping the user to have a more healthy life by consuming enough water. 
 The App lets you choose between the recommended goal calculated based on the user's age, gender, weight, and height or set up your own water intake goal.
-	
+
+## Demo
+[https://water-reminder-web.web.app](https://water-reminder-web.web.app/)
+
 ## Technologies
 Project is created with:
 * Typescript version: 4.6.4
